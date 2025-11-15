@@ -5,13 +5,11 @@ import os, json, base64, hashlib
 from pathlib import Path
 from typing import Iterable, Any, List, Dict
 from datetime import datetime
-
-# ===== ライブラリ =====
 import httpx
 from mistralai import Mistral
 from dotenv import load_dotenv, find_dotenv
 
-# ===== 入出力フォルダ =====
+# 入出力フォルダ
 INPUT_DIR = Path(
 # 元ファイルのあるフォルダ
     r"XXXXXXXXXXXXX"
