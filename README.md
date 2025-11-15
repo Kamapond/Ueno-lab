@@ -1,1 +1,1 @@
-# Mistral OCR sample code
+# 作業に使う色々
