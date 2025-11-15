@@ -6,19 +6,6 @@ from pathlib import Path
 from typing import Iterable, Any, List, Dict
 from datetime import datetime
 
-# ===== TLS / 証明書対策（社内CA対応） =====
-import certifi
-try:
-    import certifi_win32  # noqa: F401
-except Exception:
-    pass
-os.environ.setdefault("SSL_CERT_FILE", certifi.where())
-try:
-    import truststore
-    truststore.inject_into_ssl()
-except Exception:
-    pass
-
 # ===== ライブラリ =====
 import httpx
 from mistralai import Mistral
@@ -26,25 +13,25 @@ from dotenv import load_dotenv, find_dotenv
 
 # ===== 入出力フォルダ =====
 INPUT_DIR = Path(
-    r"C:\Users\smatsuzono\Documents\ZETEC\Personal Space\PersonalPersonal\MBA\!課題研究\🧊データ\本\JSNDI\UT_lv3\JPG"
+# 元ファイルのあるフォルダ
+    r"XXXXXXXXXXXXX"
 )
 OUTPUT_DIR = INPUT_DIR.parent / "_ocr_json"
 OUTPUT_JSON = OUTPUT_DIR / "combined_pages.json"
 RECURSIVE = False
 TEST_LIMIT: int | None = None  # 動作確認時は小さな数、通常は None
 
-# ===== Mistral OCR =====
+# Mistral OCR のモデル指定
 MODEL_NAME = "mistral-ocr-latest"
 INCLUDE_IMAGE_BASE64 = False
 
-# ===== .env の場所（Agent\.env 優先） =====
-ENV_PATH = Path(r"C:\Users\smatsuzono\Documents\ZETEC\Python\Agent\.env")
+# 環境変数使うなら
+ENV_PATH = Path(r"XXXXXXXXXX")
 
-# ===== 対象拡張子 =====
+# 対象ファイル拡張子
 EXTS = [".jpg", ".jpeg", ".png", ".tif", ".tiff", ".JPG", ".JPEG", ".PNG", ".TIF", ".TIFF"]
 
-
-# -------- Utils --------
+# 画像ファイルの処理
 def iter_images(dir_path: Path, recursive: bool = False) -> Iterable[Path]:
     if recursive:
         for ext in EXTS:
@@ -97,9 +84,9 @@ def extract_markdown_from_ocr_response(ocr_response: Any) -> str:
     return "\n\n".join(chunks).strip()
 
 
-# -------- Main --------
+# Main
 def main():
-    # .env 読み込み（Agent\.env を最優先）
+    # API Keyの管理に.env 使うなら
     if ENV_PATH.exists():
         load_dotenv(dotenv_path=ENV_PATH, override=False)
     else:
