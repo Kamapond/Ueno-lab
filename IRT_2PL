@@ -47,7 +47,7 @@ def main():
     
     # ------------------------------ 設定
     # データファイルのパス
-    data_file = r"C:\Users\smatsuzono\Documents\ZETEC\Python\Agent\JSNDI_WORKBOOK_RAG_v3_20251123.xlsx"
+    data_file = r"C:\...\JSNDI_WORKBOOK_RAG_v4_20251125.xlsx"
     
     # モデル名の定義
     models = [
