@@ -1,0 +1,14 @@
+import numpy as np
+from scipy.special import expit as sigmoid
+
+a_mean_items = np.asarray(posterior_samples['a']).mean(axis=0)
+b_mean_items = np.asarray(posterior_samples['b']).mean(axis=0)
+
+theta_grid = np.linspace(-4, 4, 301)
+
+p_items = sigmoid(
+    np.outer(theta_grid, a_mean_items) - 
+    np.outer(np.ones_like(theta_grid), a_mean_items * b_mean_items)
+)
+
+p_mean = p_items.mean(axis=1)
