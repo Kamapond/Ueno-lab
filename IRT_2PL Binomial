@@ -1,0 +1,37 @@
+def irt_2pl_binomial(successes, trials, N, K, beta=1, **hyper_params):
+
+    hyper_a_sd = hyper_params.get('a', 0.35)
+    hyper_b_sd = hyper_params.get('b', 1.0)
+    
+    theta1 = numpyro.sample(
+        "theta1", 
+        dist.Normal(0, 1).expand([N]).to_event(1)
+    )
+    theta = numpyro.deterministic(
+        "theta", 
+        theta1 - jnp.mean(theta1, axis=0, keepdims=True)
+    )
+    
+    log_a_sigma = numpyro.sample("log_a_sigma", dist.HalfNormal(hyper_a_sd))
+    a = numpyro.sample(
+        "a",
+        dist.TruncatedNormal(1., log_a_sigma, low=0).expand([K]).to_event(1)
+    )
+    
+    b_sd = numpyro.sample("b_sd", dist.HalfNormal(hyper_b_sd))
+    with numpyro.handlers.reparam(config={"b": LocScaleReparam()}):
+        b = numpyro.sample(
+            "b", 
+            dist.Normal(0., b_sd).expand([K]).to_event(1)
+        )
+
+    logit = a * (theta[:, None] - b)
+    p = jax.nn.sigmoid(logit)
+    
+    with numpyro.handlers.scale(scale=beta):
+        with numpyro.plate("person", N):
+            numpyro.sample(
+                "obs",
+                dist.Binomial(total_count=trials, probs=p).to_event(1),
+                obs=successes
+            )
