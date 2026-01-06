@@ -1,0 +1,28 @@
+import matplotlib.pyplot as plt
+
+def icc_curve(theta, a, b):
+    return 1.0 / (1.0 + np.exp(-a * (theta - b)))
+
+plt.figure(figsize=(10, 6))
+
+plt.plot(
+    theta_grid, p_mean, 
+    label="Aggregate ICC (Mean)", 
+    color='black', 
+    linewidth=2
+)
+
+theta_means = posterior_samples['theta'].mean(axis=0)
+for idx, (model_name, theta_val) in enumerate(zip(model_names, theta_means)):
+    color = model_colors[model_name]
+    plt.axvline(theta_val, color=color, linestyle="--", alpha=0.6)
+    plt.text(theta_val + 0.05, 0.02, model_name, rotation=90, fontsize=8)
+
+plt.xlabel("Ability (θ)", fontsize=12)
+plt.ylabel("Probability of Correct Response", fontsize=12)
+plt.xlim(-4, 4)
+plt.ylim(0, 1)
+plt.grid(True, alpha=0.3)
+plt.legend(loc='lower right')
+plt.tight_layout()
+plt.savefig('aggregate_icc_with_models.png', dpi=150, bbox_inches='tight')
