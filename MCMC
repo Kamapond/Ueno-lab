@@ -1,0 +1,23 @@
+from numpyro.infer import MCMC, NUTS
+import jax.random as random
+
+nuts_kernel = NUTS(irt_2pl_binomial, target_accept_prob=0.8)
+
+mcmc = MCMC(
+    nuts_kernel,
+    num_warmup=2000,
+    num_samples=2000,
+    num_chains=4,
+    chain_method="parallel",
+    progress_bar=True,
+)
+
+mcmc.run(
+    random.PRNGKey(0),
+    successes=successes_array,
+    trials=trials_array,
+    N=N,
+    K=K
+)
+
+posterior_samples = mcmc.get_samples()
