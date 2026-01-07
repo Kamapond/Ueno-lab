@@ -1,0 +1,36 @@
+def main():
+    client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    
+    df = pd.read_excel(EXCEL_FILE_PATH, sheet_name=SHEET_NAME)
+    
+    for index, row in tqdm(df.iterrows(), total=df.shape[0]):
+        filename = row.get("file")
+        with open(os.path.join(JSON_DIR, f"{filename}.json"), 'r') as f:
+            question_markdown = json.load(f).get("markdown")
+        
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": question_markdown}
+        ]
+        
+        try:
+            response = client.chat.completions.create(
+                model=MODEL_NAME,
+                messages=messages
+            )
+            
+            answer_full = response.choices[0].message.content.strip()
+            choice = extract_choice(answer_full)
+            
+            usage = response.usage
+            input_tokens = usage.prompt_tokens
+            output_tokens = usage.completion_tokens
+            
+            df.loc[index, 'Choice'] = choice
+            df.loc[index, 'Answer'] = answer_full
+            df.loc[index, 'Model'] = MODEL_NAME
+            
+        except Exception as e:
+            df.loc[index, 'Answer'] = f"Error: {e}"
+    
+    df.to_excel(OUTPUT_FILE_PATH, index=False)
