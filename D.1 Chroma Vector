@@ -1,0 +1,21 @@
+retriever = chroma_store.as_retriever(search_kwargs={"k": 5})
+
+def format_docs(docs):
+    parts = []
+    for d in docs:
+        src = d.metadata.get("source")
+        page = d.metadata.get("page")
+        parts.append(f"[source={src}, page={page}]\n{d.page_content}")
+    return "\n\n---\n\n".join(parts)
+
+rag_chain = (
+    {"context": retriever | format_docs, "question": RunnablePassthrough()}
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+
+def generate_answer(question_markdown):
+    answer_full = rag_chain.invoke(question_markdown)
+    choice = extract_choice(answer_full)
+    return answer_full, choice
