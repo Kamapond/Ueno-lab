@@ -1,21 +1,30 @@
-retriever = chroma_store.as_retriever(search_kwargs={"k": 5})
+def split_docs(docs):
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=500,
+        chunk_overlap=150,
+        separators=["\n\n", "\n", "。", "、", " ", ""],
+        keep_separator=False
+    )
+    chunks = splitter.split_documents(docs)
+    
+    for i, d in enumerate(chunks):
+        d.metadata["chunk_index"] = i
+    return chunks
 
-def format_docs(docs):
-    parts = []
-    for d in docs:
-        src = d.metadata.get("source")
-        page = d.metadata.get("page")
-        parts.append(f"[source={src}, page={page}]\n{d.page_content}")
-    return "\n\n---\n\n".join(parts)
+def deterministic_id(text: str, meta: dict) -> str:
+    base = f"{meta.get('source')}|{meta.get('page')}|{meta.get('chunk_index')}|{text}".encode("utf-8")
+    return hashlib.sha256(base).hexdigest()
 
-rag_chain = (
-    {"context": retriever | format_docs, "question": RunnablePassthrough()}
-    | prompt
-    | llm
-    | StrOutputParser()
-)
-
-def generate_answer(question_markdown):
-    answer_full = rag_chain.invoke(question_markdown)
-    choice = extract_choice(answer_full)
-    return answer_full, choice
+def ingest_chunked(chunks, vector_store):
+    existing_ids = get_all_ids(vector_store)
+    new_docs, new_ids = [], []
+    
+    for d in chunks:
+        did = deterministic_id(d.page_content, d.metadata)
+        if did not in existing_ids:
+            new_docs.append(d)
+            new_ids.append(did)
+            
+    if new_docs:
+        vector_store.add_documents(new_docs, ids=new_ids)
+    return len(new_docs)
