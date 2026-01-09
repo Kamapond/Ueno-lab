@@ -1,0 +1,8 @@
+context_str = (
+    f"[Source: Neo4j | Section: {record['section']}]\n"
+    f"[Scores: Sg={cand['score_g']}, St={cand['score_t']:.3f}]\n"
+    f"{record['text']}\n"
+)
+
+chain = RESPONSE_PROMPT | llm | StrOutputParser()
+answer = chain.invoke({"question": question, "context": context_str})
