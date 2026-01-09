@@ -1,0 +1,21 @@
+def import_chunks_and_tree(self, df_chunks):
+    tree_query = """
+    MERGE (d:Document {id: $docId})
+    MERGE (s:Section {title: $section, docId: $docId})
+    MERGE (d)-[:HAS_CHILD]->(s)
+    MERGE (c:Chunk {id: $chunkId})
+    MERGE (s)-[:HAS_CHILD]->(c)
+    """
+    
+    next_query = """
+    MATCH (c1:Chunk {id: $curr_id})
+    MATCH (c2:Chunk {id: $next_id})
+    MERGE (c1)-[:NEXT]->(c2)
+    """
+
+def import_mentions(self, df_mentions):
+    query = """
+    MATCH (c:Chunk {id: $chunkId})
+    MATCH (e:Entity {id: $entityId})
+    MERGE (c)-[:MENTIONS]->(e)
+    """
