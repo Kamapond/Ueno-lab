@@ -1,0 +1,28 @@
+def get_context(self, query: str, limit: int = 5) -> str:
+    search_terms = self.extract_search_entities(query)
+    
+    cypher_query = """
+    UNWIND $terms AS term
+    MATCH (e:Entity) WHERE e.id CONTAINS term
+    MATCH (c:Chunk)-[:MENTIONS]->(e)
+    MATCH (s:Section)-[:HAS_CHILD]->(c)
+    RETURN c.text AS text,
+           s.title AS section,
+           count(DISTINCT e) AS score_g
+    ORDER BY score_g DESC
+    """
+    
+    query_vec = self.embedding_model.embed_query(query)
+    
+    candidates = []
+    for record in neo4j_results:
+        chunk_vec = self.embedding_model.embed_documents([record['text']])[0]
+        score_t = self._calculate_cosine_similarity(query_vec, chunk_vec)
+        
+        candidates.append({
+            "data": record,
+            "score_g": record['score_g'],
+            "score_t": score_t
+        })
+    
+    return self._skyline_filter(candidates, limit)
