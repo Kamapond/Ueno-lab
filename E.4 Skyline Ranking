@@ -1,0 +1,27 @@
+def _skyline_filter(self, candidates, limit):
+    skyline = []
+    others = []
+    
+    for i, candidate_a in enumerate(candidates):
+        dominated = False
+        for j, candidate_b in enumerate(candidates):
+            if i == j: continue
+            
+            if (candidate_b['score_g'] >= candidate_a['score_g'] and
+                candidate_b['score_t'] >= candidate_a['score_t'] and
+                (candidate_b['score_g'] > candidate_a['score_g'] or 
+                 candidate_b['score_t'] > candidate_a['score_t'])):
+                dominated = True
+                break
+        
+        if not dominated:
+            skyline.append(candidate_a)
+        else:
+            others.append(candidate_a)
+    
+    result = skyline
+    if len(result) < limit:
+        others.sort(key=lambda x: x['score_g'] + x['score_t'], reverse=True)
+        result += others[:limit - len(result)]
+    
+    return result[:limit]
