@@ -1,0 +1,24 @@
+class GraphExtractor:
+    def __init__(self, model_name):
+        self.llm = ChatOpenAI(temperature=0, model=model_name)
+        
+        self.transformer = LLMGraphTransformer(
+            llm=self.llm,
+            allowed_nodes=[
+                "Standard", "Document", "Section",
+                "Weld", "Material", "Defect",
+                "Probe", "Method", "Signal",
+                "Requirement", "Condition"
+            ],
+            allowed_relationships=[
+                "HAS_PART", "DEFINES",
+                "DETECTS", "GENERATES_SIGNAL",
+                "REQUIRES", "CONFORMS_TO",
+                "MEASURES", "HAS_TOLERANCE"
+            ]
+        )
+
+class MarkdownParser:
+    def parse_file(self, file_path):
+        ...
+        return ChunkData(..., hierarchy=current_hierarchy)
